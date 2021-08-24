@@ -6,7 +6,17 @@ const app = express();
 
 const { v4: uuidv4 } = require("uuid");
 
+const mongoose = require("mongoose");
+
 app.use(express.json());
+
+const todoSchema = new mongoose.Schema({
+  title: String,
+  userId: String,
+  completed: Boolean,
+});
+
+const Todo = mongoose.model("Todo", todoSchema);
 
 app.get("/", (req, res) => {
   res.send("Hi!");
@@ -44,20 +54,42 @@ app.get("/todos/:id", (req, res) => {
   });
 });
 
+// app.post("/todos", (req, res) => {
+//   const { title } = req.body;
+
+//   fs.readFile("./todos.json", "utf8", (err, data) => {
+//     const todos = JSON.parse(data);
+//     const newTodo = {
+//       id: uuidv4(),
+//       title,
+//       completed: false,
+//       userId: "1",
+//     };
+//     todos.push(newTodo);
+//     fs.writeFile("./todos.json", JSON.stringify(todos), (err) => {});
+//   });
+// });
+
 app.post("/todos", (req, res) => {
   const { title } = req.body;
 
-  fs.readFile("./todos.json", "utf8", (err, data) => {
-    const todos = JSON.parse(data);
-    const newTodo = {
-      id: uuidv4(),
-      title,
-      completed: false,
-      userId: "1",
-    };
-    todos.push(newTodo);
-    fs.writeFile("./todos.json", JSON.stringify(todos), (err) => {});
-  });
+  const todo = new Todo({ title, completed: false, userId: "1" });
+
+  todo.save();
+
+  res.send("OK!");
+
+  // fs.readFile("./todos.json", "utf8", (err, data) => {
+  //   const todos = JSON.parse(data);
+  //   const newTodo = {
+  //     id: uuidv4(),
+  //     title,
+  //     completed: false,
+  //     userId: "1",
+  //   };
+  //   todos.push(newTodo);
+  //   fs.writeFile("./todos.json", JSON.stringify(todos), (err) => {});
+  // });
 });
 
 app.post("/todos", (req, res) => {
@@ -137,4 +169,10 @@ function initTodos() {
 
 initTodos();
 
-app.listen(8080);
+mongoose.connect(
+  "mongodb://localhost/gocode_shop_8_21",
+  { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true },
+  () => {
+    app.listen(8080);
+  }
+);

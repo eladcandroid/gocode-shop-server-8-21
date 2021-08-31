@@ -8,7 +8,12 @@ const { v4: uuidv4 } = require("uuid");
 
 const mongoose = require("mongoose");
 
+const cors = require("cors");
+
+require("dotenv").config();
+
 app.use(express.json());
+app.use(cors());
 
 const todoSchema = new mongoose.Schema({
   title: String,
@@ -27,10 +32,9 @@ app.get("/todos", (req, res) => {
 
   Todo.find((err, todos) => {
     if (title) {
-      todos = todos.filter((todo) =>
-        todo.title
-          ? todo.title.toLowerCase().includes(title.toLowerCase())
-          : false
+      todos = todos.filter(
+        (todo) =>
+          todo.title && todo.title.toLowerCase().includes(title.toLowerCase())
       );
     }
 
@@ -50,9 +54,9 @@ app.post("/todos", (req, res) => {
 
   const todo = new Todo({ title, completed: false, userId: "1" });
 
-  todo.save();
-
-  res.send("OK!");
+  todo.save((err, todo) => {
+    res.send(todo);
+  });
 });
 
 app.put("/todos/:id", (req, res) => {
@@ -63,7 +67,7 @@ app.put("/todos/:id", (req, res) => {
   title ? (updatedFields.title = title) : null;
   userId ? (updatedFields.userId = userId) : null;
 
-  Todo.findByIdAndUpdate(id, updatedFields, (err, todo) => {
+  Todo.findByIdAndUpdate(id, updatedFields, { new: true }, (err, todo) => {
     res.send(todo);
   });
 });
@@ -99,8 +103,10 @@ function initTodos() {
 
 initTodos();
 
+const { DB_USER, DB_PASS, DB_HOST, DB_NAME } = process.env;
+
 mongoose.connect(
-  "mongodb://localhost/gocode_shop_8_21",
+  `mongodb+srv://${DB_USER}:${DB_PASS}@${DB_HOST}/${DB_NAME}?retryWrites=true&w=majority`,
   { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true },
   () => {
     app.listen(8080);

@@ -12,6 +12,7 @@ const cors = require("cors");
 
 require("dotenv").config();
 
+app.use(express.static("client/build"));
 app.use(express.json());
 app.use(cors());
 
@@ -27,7 +28,7 @@ app.get("/", (req, res) => {
   res.send("Hi!");
 });
 
-app.get("/todos", (req, res) => {
+app.get("/api/todos", (req, res) => {
   const { title } = req.query;
 
   Todo.find((err, todos) => {
@@ -42,14 +43,14 @@ app.get("/todos", (req, res) => {
   });
 });
 
-app.get("/todos/:id", (req, res) => {
+app.get("/api/todos/:id", (req, res) => {
   const { id } = req.params;
   Todo.findById(id, (err, todo) => {
     res.send(todo);
   });
 });
 
-app.post("/todos", (req, res) => {
+app.post("/api/todos", (req, res) => {
   const { title } = req.body;
 
   const todo = new Todo({ title, completed: false, userId: "1" });
@@ -59,7 +60,7 @@ app.post("/todos", (req, res) => {
   });
 });
 
-app.put("/todos/:id", (req, res) => {
+app.put("/api/todos/:id", (req, res) => {
   const { id } = req.params;
   const { title, userId } = req.body;
 
@@ -72,7 +73,7 @@ app.put("/todos/:id", (req, res) => {
   });
 });
 
-app.delete("/todos/:id", (req, res) => {
+app.delete("/api/todos/:id", (req, res) => {
   try {
     const { id } = req.params;
     Todo.findByIdAndDelete(id, (err, todo) => {
@@ -85,7 +86,7 @@ app.delete("/todos/:id", (req, res) => {
 });
 
 app.get("*", (req, res) => {
-  res.send(404);
+  res.sendFile(__dirname + "/client/build/index.html");
 });
 
 function initTodos() {
